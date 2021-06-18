@@ -1,0 +1,54 @@
+{
+    "name": "tarunjangra/file-handler",
+    "type": "library",
+    "description": "Filesystem handler and image processor for php",
+    "keywords": [
+        "local",
+        "filesystem",
+        "s3",
+        "images",
+        "php"
+    ],
+    "authors": [
+        {
+            "name": "Tarun Jangra",
+            "email": "tarun.jangra@hotmail.com",
+            "role": "DevOps"
+        }
+    ],
+    "license": "BSD-3-Clause",
+    "support": {
+        "issues": "https://github.com/tarunjangra/file-handler/issues?state=open",
+        "source": "https://github.com/tarunjangra/file-handler"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.2|^8.0",
+        "intervention/image": "^2.5",
+        "league/flysystem-aws-s3-v3": "^2.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "roave/infection-static-analysis-plugin": "^1.6",
+        "spatie/phpunit-watcher": "^1.23",
+        "vimeo/psalm": "^4.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "TJangra\\FileHandler\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TJangra\\FileHandler\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit --testdox --no-interaction",
+        "test-watch": "phpunit-watcher watch"
+    }
+}
