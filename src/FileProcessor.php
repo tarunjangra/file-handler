@@ -28,7 +28,10 @@ class FileProcessor
         if (preg_match("/image/", $mimeType)) {
             Image::configure(array('driver' => $this->driver));
             foreach ($matrix['files'] as $fileInfo) {
-                $resizedImageData = (string) Image::make($source)->resize($fileInfo['size']['width'], $fileInfo['size']['height'])->encode();
+                $resizedImageData = (string) Image::make($source)->resize($fileInfo['size']['width'], $fileInfo['size']['height'],function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->encode();
                 $this->adapter->save($fileInfo['location'], $resizedImageData);
             }
         }
