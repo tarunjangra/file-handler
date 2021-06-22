@@ -18,8 +18,6 @@ class S3Adapter implements AdapterInterface
 
     public function __construct(array $options, string $bucketName, string $visibility = Visibility::PUBLIC)
     {
-
-        // The internal adapter
         $adapter = new AwsS3V3Adapter(
             new S3Client($options),
             $bucketName,
@@ -28,8 +26,6 @@ class S3Adapter implements AdapterInterface
                 $visibility
             )
         );
-
-        // The FilesystemOperator
         $this->fileSystem = new Filesystem($adapter);
     }
 

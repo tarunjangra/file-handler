@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace TJangra\FileHandler;
 
-use FileTypeEnum;
-use Intervention\Image\Image;
-use Intervention\Image\ImageManager;
 use Intervention\Image\ImageManagerStatic;
 use TJangra\FileHandler\Adapter\LocalAdapter;
 
@@ -18,7 +15,7 @@ class FileProcessor
     private string $sourcePath;
     private string $uniqueIdentifire;
     private string $fileCategory;
-    public array $fileMatrix;
+    private array $fileMatrix = [];
 
     public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
@@ -27,7 +24,8 @@ class FileProcessor
         $this->driver = $driver;
     }
 
-    public function configure(string $sourcePath, string $uniqueIdentifire, string $fileCategory = null): FileProcessor {
+    public function configure(string $sourcePath, string $uniqueIdentifire, string $fileCategory = null): FileProcessor
+    {
         $this->sourcePath = $sourcePath;
         $this->uniqueIdentifire = $uniqueIdentifire;
         $this->fileCategory = $fileCategory;
@@ -38,13 +36,18 @@ class FileProcessor
         return $this;
     }
 
+    public function getMatrix(): array
+    {
+        return $this->fileMatrix['files'];
+    }
+
 
     public function process($callback = null): FileProcessor
     {
         ImageManagerStatic::configure(array('driver' => $this->driver));
         $mimeType = mime_content_type($this->sourcePath);
         if (preg_match("/image/", $mimeType) && $callback) {
-            $callback(ImageManagerStatic::make($this->sourcePath),$this->fileMatrix['files'], $this->adapter);
+            $callback(ImageManagerStatic::make($this->sourcePath), $this);
         }
         return $this;
     }
@@ -53,7 +56,7 @@ class FileProcessor
     {
         $this->adapter->save($location, $data);
     }
-    
+
     public function delete(string $location): void
     {
         $this->adapter->delete($location);
