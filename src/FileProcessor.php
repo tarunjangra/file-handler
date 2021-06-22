@@ -4,40 +4,56 @@ declare(strict_types=1);
 
 namespace TJangra\FileHandler;
 
-use Intervention\Image\ImageManagerStatic as Image;
+use FileTypeEnum;
+use Intervention\Image\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\ImageManagerStatic;
 use TJangra\FileHandler\Adapter\LocalAdapter;
 
 class FileProcessor
 {
-    private array $matrix;
+    private array $matrixConfig;
     private AdapterInterface $adapter;
     private string $driver;
+    private string $sourcePath;
+    private string $uniqueIdentifire;
+    private string $fileCategory;
+    public array $fileMatrix;
 
-    public function __construct(?array $matrix = null, ?AdapterInterface $adapter = null, string $driver = 'gd')
+    public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
-        $this->matrix = $matrix;
+        $this->matrixConfig = $matrixConfig;
         $this->adapter = $adapter ?? new LocalAdapter(dirname(__DIR__));
         $this->driver = $driver;
     }
 
-    public function save(string $source, string $fileType, ?string $uniqueIdentifire = null)
+    public function configure(string $sourcePath, string $uniqueIdentifire, string $fileCategory = null): FileProcessor {
+        $this->sourcePath = $sourcePath;
+        $this->uniqueIdentifire = $uniqueIdentifire;
+        $this->fileCategory = $fileCategory;
+
+        $ext = pathinfo($this->sourcePath, PATHINFO_EXTENSION);
+        $mimeType = mime_content_type($this->sourcePath);
+        $this->fileMatrix = (new Matrix($this->matrixConfig, $mimeType, $this->uniqueIdentifire))($ext, $this->fileCategory);
+        return $this;
+    }
+
+
+    public function process($callback = null): FileProcessor
     {
-        $ext = pathinfo($source, PATHINFO_EXTENSION);
-        $mimeType = mime_content_type($source);
-        $matrix = (new Matrix($this->matrix, $mimeType, $uniqueIdentifire))($ext, $fileType);
-        if (preg_match("/image/", $mimeType)) {
-            Image::configure(array('driver' => $this->driver));
-            foreach ($matrix['files'] as $fileInfo) {
-                $resizedImageData = (string) Image::make($source)->resize($fileInfo['size']['width'], $fileInfo['size']['height'],function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->encode();
-                $this->adapter->save($fileInfo['location'], $resizedImageData);
-            }
+        ImageManagerStatic::configure(array('driver' => $this->driver));
+        $mimeType = mime_content_type($this->sourcePath);
+        if (preg_match("/image/", $mimeType) && $callback) {
+            $callback(ImageManagerStatic::make($this->sourcePath),$this->fileMatrix['files'], $this->adapter);
         }
         return $this;
     }
 
+    public function save($location, $data): void
+    {
+        $this->adapter->save($location, $data);
+    }
+    
     public function delete(string $location): void
     {
         $this->adapter->delete($location);

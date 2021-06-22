@@ -19,11 +19,11 @@ class Matrix
         // only support jpeg, png
     }
 
-    function __invoke(string $ext, string $fileType = null)
+    function __invoke(string $ext, string $fileCategory = null)
     {
-        $matrixStructure = "{$this->uniqueIdentifire}/{$fileType}";
+        $matrixStructure = "{$this->uniqueIdentifire}/{$fileCategory}";
         if (preg_match("/image/", $this->mimeType)) {
-            foreach ($this->matrix[$fileType] as $dimensions) {
+            foreach ($this->matrix[$fileCategory] as $dimensions) {
                 $return["{$dimensions['width']}x{$dimensions['height']}"] = [
                     'name' => "{$dimensions['width']}x{$dimensions['height']}.{$ext}",
                     'location' => "{$matrixStructure}/{$dimensions['width']}x{$dimensions['height']}.{$ext}",
@@ -34,7 +34,7 @@ class Matrix
             return ['directory' => $matrixStructure, 'files' => $return];
         }
         $randomFileName = time();
-        $fileType = $fileType ?? $ext;
+        $matrixStructure = $fileCategory ?? $ext;
         $return[$ext] = [
             'name' => "{$randomFileName}.{$ext}",
             'location' => "{$matrixStructure}/{$randomFileName}.{$ext}",

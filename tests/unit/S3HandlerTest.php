@@ -1,8 +1,11 @@
 <?php
+
 namespace TJangra\FileHandler\Tests;
 
+use Intervention\Image\Image;
 use League\Flysystem\UnableToReadFile;
 use TJangra\FileHandler\Adapter\S3Adapter;
+use TJangra\FileHandler\AdapterInterface;
 use TJangra\FileHandler\FileProcessor;
 
 class S3HandlerTest extends \Codeception\Test\Unit
@@ -13,26 +16,32 @@ class S3HandlerTest extends \Codeception\Test\Unit
 
     protected function _before(): void
     {
-        $this->processor = new FileProcessor(MATRIX,new S3Adapter(['region'=> 'ap-south-1','version'=>'latest'],'smesol'));
+        $this->processor = new FileProcessor(MATRIX, new S3Adapter(['region' => 'ap-south-1', 'version' => 'latest'], 'smesol'));
         parent::_before();
     }
 
-    public function testSave() 
+    public function testImageSave()
     {
-            $this->processor->save(SOURCE_PATH.'/test.jpg','profile','798789wuewio');
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', '798789wuewio', 'profile')->process(function (Image $sourceImage, array $fileMatrix, AdapterInterface $adp) {
+            foreach ($fileMatrix as $fileInfo) {
+                $adp->save($fileInfo['location'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->encode());
+            }
+        });
 
-         $this->assertNotEmpty($this->processor->read('798789wuewio/profile/16x16.jpg'));
-         $this->assertNotEmpty($this->processor->read('798789wuewio/profile/50x50.jpg'));
-         $this->assertNotEmpty($this->processor->read('798789wuewio/profile/100x100.jpg'));
-         $this->assertNotEmpty($this->processor->read('798789wuewio/profile/200x200.jpg'));
+        $this->assertNotEmpty($this->processor->read('798789wuewio/profile/16x16.jpg'));
+        $this->assertNotEmpty($this->processor->read('798789wuewio/profile/50x50.jpg'));
+        $this->assertNotEmpty($this->processor->read('798789wuewio/profile/100x100.jpg'));
+        $this->assertNotEmpty($this->processor->read('798789wuewio/profile/200x200.jpg'));
     }
 
-
-    public function testRead()
-    {   
+    public function testImageRead()
+    {
         $this->assertNotEmpty($this->processor->read('798789wuewio/profile/16x16.jpg'));
     }
-    public function testDelete()
+    public function testImageDelete()
     {   
         $this->processor->delete('798789wuewio/profile/16x16.jpg');
         $this->assertThrows(UnableToReadFile::class, function() {
@@ -50,6 +59,5 @@ class S3HandlerTest extends \Codeception\Test\Unit
             $this->processor->read('798789wuewio/profile/200x200.jpg');
         });
     }
-    
-// }
+
 }
