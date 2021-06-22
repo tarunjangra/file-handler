@@ -1,18 +1,15 @@
 <?php
+
+namespace TJangra\FileHandler;
+
 use MyCLabs\Enum\Enum;
 
 /**
  * @method static Action IMAGE()
- * @method static Action PDF()
- * @method static Action CSV()
- * @method static Action JS()
- * @method static Action CSS()
+ * @method static Action NON_IMAGE()
  */
 final class FileTypeEnum extends Enum
 {
     private const IMAGE = 'IMAGE';
-    private const PDF = 'PDF';
-    private const CSV = 'CSV';
-    private const JS = 'JS';
-    private const CSS = 'CSS';
+    private const NON_IMAGE = 'NON_IMAGE';
 }

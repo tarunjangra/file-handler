@@ -61,6 +61,6 @@ class S3HandlerTest extends \Codeception\Test\Unit
 
     public function testSavePDF()
     {
-        $this->processor->configure()->save();
+        $this->processor->configure(SOURCE_PATH . '/sample.pdf', '798789wuewio')->save();
     }
 }

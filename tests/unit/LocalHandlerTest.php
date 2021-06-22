@@ -56,4 +56,24 @@ class LocalHandlerTest extends \Codeception\Test\Unit
         $this->assertFalse(file_exists(DESTINATION_PATH . '/798789wuewio/profile/100x100.jpg'));
         $this->assertFalse(file_exists(DESTINATION_PATH . '/798789wuewio/profile/200x200.jpg'));
     }
+
+    public function testSavePDF()
+    {
+        $this->processor->configure(SOURCE_PATH . '/sample.pdf', '798789wuewio')->save();
+    }
+
+    public function testMoreImageProcessings()
+    {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+            $processor->save('798789wuewio/profile/test-flip.jpg', $sourceImage->flip()->encode());
+        });
+
+        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+            $processor->save('798789wuewio/profile/test-flip-verticale.jpg', $sourceImage->flip('v')->encode());
+        });
+
+        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+            $processor->save('798789wuewio/profile/test-rotate.jpg', $sourceImage->rotate(-85)->encode());
+        });
+    }
 }
