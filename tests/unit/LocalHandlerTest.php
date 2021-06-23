@@ -10,7 +10,7 @@ class LocalHandlerTest extends \Codeception\Test\Unit
 {
     use \Codeception\AssertThrows;
 
-    protected $processor;
+    protected FileProcessor $processor;
 
     protected function _before(): void
     {
@@ -22,7 +22,7 @@ class LocalHandlerTest extends \Codeception\Test\Unit
     {
         $this->processor->configure(SOURCE_PATH . '/test.jpg', '798789wuewio', 'profile')->process(function (Image $sourceImage, FileProcessor &$processor) {
             foreach ($processor->getMatrix() as $fileInfo) {
-                $processor->save($fileInfo['location'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
+                $processor->save($fileInfo['filePath'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })->encode());
@@ -75,5 +75,10 @@ class LocalHandlerTest extends \Codeception\Test\Unit
         $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
             $processor->save('798789wuewio/profile/test-rotate.jpg', $sourceImage->rotate(-85)->encode());
         });
+    }
+
+    public function testSaveCSV()
+    {
+        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio', 'profile')->targetFilename('new.csv')->save();
     }
 }

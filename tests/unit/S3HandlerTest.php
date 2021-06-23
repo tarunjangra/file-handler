@@ -11,7 +11,7 @@ class S3HandlerTest extends \Codeception\Test\Unit
 {
     use \Codeception\AssertThrows;
 
-    protected $processor;
+    protected FileProcessor $processor;
 
     protected function _before(): void
     {
@@ -23,7 +23,7 @@ class S3HandlerTest extends \Codeception\Test\Unit
     {
         $this->processor->configure(SOURCE_PATH . '/test.jpg', '798789wuewio', 'profile')->process(function (Image $sourceImage, FileProcessor &$processor) {
             foreach ($processor->getMatrix() as $fileInfo) {
-                $processor->save($fileInfo['location'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
+                $processor->save($fileInfo['filePath'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })->encode());
@@ -62,5 +62,10 @@ class S3HandlerTest extends \Codeception\Test\Unit
     public function testSavePDF()
     {
         $this->processor->configure(SOURCE_PATH . '/sample.pdf', '798789wuewio')->save();
+    }
+
+    public function testSaveCSV()
+    {
+        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio')->targetFilename('new.csv')->save();
     }
 }

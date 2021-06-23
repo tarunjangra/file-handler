@@ -15,8 +15,6 @@ class Matrix
         $this->matrix = $matrix;
         $this->uniqueIdentifire = $uniqueIdentifire ?? (string) microtime(true);
         $this->mimeType = $mimeType;
-
-        // only support jpeg, png
     }
 
     function __invoke(string $ext, string $fileCategory = null, string $fileName = null)
@@ -30,18 +28,20 @@ class Matrix
                     $return[] = [
                         'category' => $fileCategory,
                         'name' => "{$dimensions['width']}x{$dimensions['height']}.{$ext}",
-                        'location' => "{$matrixStructure}/{$dimensions['width']}x{$dimensions['height']}.{$ext}",
+                        'filePath' => "{$matrixStructure}/{$dimensions['width']}x{$dimensions['height']}.{$ext}",
+                        'location' => $matrixStructure,
                         'size' => $dimensions
                     ];
                 }
                 return ['directory' => $matrixStructure, 'files' => $return];
             }
         }
-        $randomFileName = $fileName??time();
+        $randomFileName = $fileName ?? time();
         $return[] = [
             'category' => $fileCategory,
             'name' => "{$randomFileName}.{$ext}",
-            'location' => "{$matrixStructure}/{$randomFileName}.{$ext}",
+            'filePath' => "{$matrixStructure}/{$randomFileName}.{$ext}",
+            'location' => $matrixStructure,
             'size' => null
         ];
         return ['directory' => "{$matrixStructure}", 'files' => $return];

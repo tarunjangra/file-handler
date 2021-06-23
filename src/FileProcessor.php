@@ -18,6 +18,7 @@ class FileProcessor
     private ?string $fileCategory;
     private array $fileMatrix = [];
     private FileTypeEnum $fileType;
+    private ?string $targetFilename = null;
 
     public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
@@ -68,8 +69,15 @@ class FileProcessor
                 throw new \Exception('Provided parameters are empty.');
             }
         } else {
-            $this->adapter->save($this->getMatrix()[0]['location'], file_get_contents($this->sourcePath));
+            $filePath = $this->targetFilename ? $this->getMatrix()[0]['location'] . DIRECTORY_SEPARATOR . $this->targetFilename : $this->getMatrix()[0]['filePath'];
+            $this->adapter->save($filePath, file_get_contents($this->sourcePath));
         }
+    }
+
+    public function targetFilename(string $fileName): FileProcessor
+    {
+        $this->targetFilename = $fileName;
+        return $this;
     }
 
     public function delete(string $location): void
