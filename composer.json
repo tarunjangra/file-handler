@@ -22,7 +22,7 @@
         "issues": "https://github.com/tarunjangra/file-handler/issues?state=open",
         "source": "https://github.com/tarunjangra/file-handler"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "php": "^7.4|^8.0",
