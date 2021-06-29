@@ -33,10 +33,10 @@ class FileProcessor
         $this->sourcePath = $sourcePath;
         $this->uniqueIdentifire = $uniqueIdentifire;
         $this->fileCategory = $fileCategory;
-
-        $ext = pathinfo($this->sourcePath, PATHINFO_EXTENSION);
-        $fileName ??= pathinfo($this->sourcePath, PATHINFO_FILENAME);
         $mimeType = mime_content_type($this->sourcePath);
+        $mimes = new \Mimey\MimeTypes;
+        $ext = $mimes->getExtension($mimeType);
+        $fileName ??= (string) microtime(true);
         $this->fileMatrix = (new Matrix($this->matrixConfig, $mimeType, $this->uniqueIdentifire))($ext, $this->fileCategory, $fileName);
         return $this;
     }

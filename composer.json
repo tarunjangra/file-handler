@@ -28,7 +28,8 @@
         "php": "^7.4|^8.0",
         "intervention/image": "^2.5",
         "league/flysystem-aws-s3-v3": "^2.1",
-        "myclabs/php-enum": "^1.8"
+        "myclabs/php-enum": "^1.8",
+        "ralouphie/mimey": "dev-main"
     },
     "require-dev": {
         "vimeo/psalm": "^4.3",
@@ -39,6 +40,12 @@
         "codeception/module-asserts": "^1.0.0",
         "codeception/assert-throws": "^1.1"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/tarunjangra/mimey.git"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "TJangra\\FileHandler\\": "src"

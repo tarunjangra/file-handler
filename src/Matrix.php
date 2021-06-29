@@ -6,9 +6,9 @@ namespace TJangra\FileHandler;
 
 class Matrix
 {
-    private ?string $uniqueIdentifire;
-    private ?string $mimeType;
-    private ?array $matrix;
+    private string $uniqueIdentifire;
+    private string $mimeType;
+    private array $matrix;
 
     public function __construct(array $matrix, string $mimeType, ?string $uniqueIdentifire = null)
     {
@@ -19,7 +19,9 @@ class Matrix
 
     function __invoke(string $ext, string $fileCategory = null, string $fileName = null)
     {
-
+        if (empty($ext)) {
+            throw new \Exception("TypeError: Null is not allowed in ext parameter.");
+        }
         $fileCategory = $fileCategory ?? $ext;
         $matrixStructure = "{$this->uniqueIdentifire}/{$fileCategory}";
         if (preg_match("/image/", $this->mimeType)) {
