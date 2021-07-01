@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TJangra\FileHandler;
 
+use Exception;
 use Intervention\Image\ImageManagerStatic;
 use TJangra\FileHandler\Adapter\LocalAdapter;
 use TJangra\FileHandler\FileTypeEnum;
@@ -20,6 +21,9 @@ class FileProcessor
     private FileTypeEnum $fileType;
     private ?string $targetFilename = null;
 
+    private string $fileName;
+    private string $extension;
+
     public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
         $this->matrixConfig = $matrixConfig;
@@ -28,22 +32,37 @@ class FileProcessor
         $this->fileType = FileTypeEnum::NON_IMAGE();
     }
 
-    public function configure(string $sourcePath, string $uniqueIdentifire = null, string $fileCategory = null, string $fileName = null): FileProcessor
+    public function configure(string $sourcePath, string $uniqueIdentifire = null, string $fileCategory = null, string $fileName = null, string $mimeType = null): FileProcessor
     {
         $this->sourcePath = $sourcePath;
         $this->uniqueIdentifire = $uniqueIdentifire;
         $this->fileCategory = $fileCategory;
-        $mimeType = mime_content_type($this->sourcePath);
+
+        $mimeType ??=  mime_content_type($this->sourcePath);
+        if (empty($mimeType)) {
+            throw new Exception("MimeType Exception: Can not detect mimetype of the document being uploaded. Please mention in the argument list.");
+        }
         $mimes = new \Mimey\MimeTypes;
-        $ext = $mimes->getExtension($mimeType);
-        $fileName ??= (string) microtime(true);
-        $this->fileMatrix = (new Matrix($this->matrixConfig, $mimeType, $this->uniqueIdentifire))($ext, $this->fileCategory, $fileName);
+        $this->extension = $mimes->getExtension($mimeType);
+
+        $this->fileName = $fileName ?? (string) microtime(true);
+        $this->fileMatrix = (new Matrix($this->matrixConfig, $mimeType, $this->uniqueIdentifire))($this->extension, $this->fileCategory, $this->fileName);
         return $this;
     }
 
     public function getMatrix(): array
     {
         return $this->fileMatrix['files'];
+    }
+
+    public function getFileName(): string
+    {
+        return $this->fileName;
+    }
+
+    public function getExtension(): string
+    {
+        return $this->extension;
     }
 
 
@@ -54,6 +73,9 @@ class FileProcessor
             $this->fileType = FileTypeEnum::IMAGE();
             ImageManagerStatic::configure(array('driver' => $this->driver));
             $callback(ImageManagerStatic::make($this->sourcePath), $this);
+
+            if(isset($this->matrixConfig[]))
+
         } else {
             throw new \Exception('Provided source is not an image. Skip "process" function call.');
         }
