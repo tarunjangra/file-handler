@@ -66,6 +66,6 @@ class S3HandlerTest extends \Codeception\Test\Unit
 
     public function testSaveCSV()
     {
-        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio')->targetFilename('new.csv')->save();
+        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio', null, null, 'text/csv')->targetFilename('new.csv')->save();
     }
 }

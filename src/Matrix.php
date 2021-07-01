@@ -17,10 +17,10 @@ class Matrix
         $this->mimeType = $mimeType;
     }
 
-    function __invoke(string $ext, string $fileCategory = null, string $fileName = null)
+    function __invoke(?string $ext, string $fileCategory = null, string $fileName = null)
     {
         if (empty($ext)) {
-            throw new \Exception("TypeError: Null is not allowed in ext parameter.");
+            throw new \Exception("MimeType Exception: Mime type of the document being uploaded is invalid. Please mention in the argument list.");
         }
         $fileCategory = $fileCategory ?? $ext;
         $matrixStructure = "{$this->uniqueIdentifire}/{$fileCategory}";

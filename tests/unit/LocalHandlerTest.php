@@ -79,6 +79,6 @@ class LocalHandlerTest extends \Codeception\Test\Unit
 
     public function testSaveCSV()
     {
-        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio', 'profile')->targetFilename('new.csv')->save();
+        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio', 'profile', null, 'text/csv')->targetFilename('new.csv')->save();
     }
 }

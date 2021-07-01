@@ -22,7 +22,7 @@ class FileProcessor
     private ?string $targetFilename = null;
 
     private string $fileName;
-    private string $extension;
+    private ?string $extension;
 
     public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
@@ -39,9 +39,6 @@ class FileProcessor
         $this->fileCategory = $fileCategory;
 
         $mimeType ??=  mime_content_type($this->sourcePath);
-        if (empty($mimeType)) {
-            throw new Exception("MimeType Exception: Can not detect mimetype of the document being uploaded. Please mention in the argument list.");
-        }
         $mimes = new \Mimey\MimeTypes;
         $this->extension = $mimes->getExtension($mimeType);
 
@@ -73,9 +70,6 @@ class FileProcessor
             $this->fileType = FileTypeEnum::IMAGE();
             ImageManagerStatic::configure(array('driver' => $this->driver));
             $callback(ImageManagerStatic::make($this->sourcePath), $this);
-
-            if(isset($this->matrixConfig[]))
-
         } else {
             throw new \Exception('Provided source is not an image. Skip "process" function call.');
         }
