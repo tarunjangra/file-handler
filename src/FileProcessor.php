@@ -22,19 +22,19 @@ class FileProcessor
     private array $fileMatrix = [];
     private FileTypeEnum $fileType;
     private ?string $targetFilename = null;
-    private FinfoMimeTypeDetector $mimeTypeDetector;
+    private bool $preserveOriginal = false;
 
     private string $fileName;
     private string $mimeType;
     private string $extension;
 
-    public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
+    public function __construct(array $matrixConfig, AdapterInterface $adapter, bool $preserveOriginal = false, string $driver = 'gd')
     {
         $this->matrixConfig = $matrixConfig;
         $this->adapter = $adapter ?? new LocalAdapter(dirname(__DIR__));
         $this->driver = $driver;
         $this->fileType = FileTypeEnum::NON_IMAGE();
-        $this->mimeTypeDetector = new FinfoMimeTypeDetector('', null, 100);
+        $this->preserveOriginal = $preserveOriginal;
     }
 
     public function configure(string $sourcePath, array $mimeTypeMap, string $uniqueIdentifire = null, string $fileCategory = null, string $fileName = null): FileProcessor
@@ -66,11 +66,14 @@ class FileProcessor
 
     public function process($callback = null): FileProcessor
     {
-        $mimeType = mime_content_type($this->sourcePath);
-        if (preg_match("/image/", $mimeType) && $callback) {
+        if (preg_match("/image/", $this->getMimeType()) && $callback) {
             $this->fileType = FileTypeEnum::IMAGE();
             ImageManagerStatic::configure(array('driver' => $this->driver));
-            $callback(ImageManagerStatic::make($this->sourcePath), $this);
+            $sourceImage = ImageManagerStatic::make($this->sourcePath);
+            $callback($sourceImage, $this);
+            if ($this->preserveOriginal) {
+                $this->save($this->getMatrix()[0]['location'] . DIRECTORY_SEPARATOR . 'original.' . $this->getExtension(), (string) $sourceImage->encode());
+            }
         } else {
             throw new \Exception('Provided source is not an image. Skip "process" function call.');
         }

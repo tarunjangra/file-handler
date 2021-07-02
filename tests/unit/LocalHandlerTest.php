@@ -14,7 +14,7 @@ class LocalHandlerTest extends \Codeception\Test\Unit
 
     protected function _before(): void
     {
-        $this->processor = new FileProcessor(MATRIX, new LocalAdapter(DESTINATION_PATH));
+        $this->processor = new FileProcessor(MATRIX, new LocalAdapter(DESTINATION_PATH), true);
         parent::_before();
     }
 
@@ -83,5 +83,19 @@ class LocalHandlerTest extends \Codeception\Test\Unit
     public function testSaveCSV()
     {
         $this->processor->configure(SOURCE_PATH . '/sample.csv', ['csv' => 'text/csv'], '798789wuewio', 'profile')->targetFilename('new.csv')->save();
+    }
+
+
+    public function testImageSaveWithPreserveOriginal()
+    {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', ['jpg' => 'image/jpeg'], '798789wuewio', 'profile')->process(function (Image $sourceImage, FileProcessor $processor) {
+            foreach ($processor->getMatrix() as $fileInfo) {
+                $processor->save($fileInfo['filePath'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->encode());
+            }
+        });
+        $this->assertTrue(file_exists(DESTINATION_PATH . '/798789wuewio/profile/original.jpg'));
     }
 }
