@@ -6,6 +6,8 @@ namespace TJangra\FileHandler;
 
 use Exception;
 use Intervention\Image\ImageManagerStatic;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
+use League\MimeTypeDetection\GeneratedExtensionToMimeTypeMap;
 use TJangra\FileHandler\Adapter\LocalAdapter;
 use TJangra\FileHandler\FileTypeEnum;
 
@@ -20,9 +22,11 @@ class FileProcessor
     private array $fileMatrix = [];
     private FileTypeEnum $fileType;
     private ?string $targetFilename = null;
+    private FinfoMimeTypeDetector $mimeTypeDetector;
 
     private string $fileName;
-    private ?string $extension;
+    private string $mimeType;
+    private string $extension;
 
     public function __construct(array $matrixConfig, AdapterInterface $adapter, string $driver = 'gd')
     {
@@ -30,20 +34,18 @@ class FileProcessor
         $this->adapter = $adapter ?? new LocalAdapter(dirname(__DIR__));
         $this->driver = $driver;
         $this->fileType = FileTypeEnum::NON_IMAGE();
+        $this->mimeTypeDetector = new FinfoMimeTypeDetector('', null, 100);
     }
 
-    public function configure(string $sourcePath, string $uniqueIdentifire = null, string $fileCategory = null, string $fileName = null, string $mimeType = null): FileProcessor
+    public function configure(string $sourcePath, array $mimeTypeMap, string $uniqueIdentifire = null, string $fileCategory = null, string $fileName = null): FileProcessor
     {
         $this->sourcePath = $sourcePath;
         $this->uniqueIdentifire = $uniqueIdentifire;
         $this->fileCategory = $fileCategory;
-
-        $mimeType ??=  mime_content_type($this->sourcePath);
-        $mimes = new \Mimey\MimeTypes;
-        $this->extension = $mimes->getExtension($mimeType);
-
+        $this->mimeType =  current($mimeTypeMap);
+        $this->extension = key($mimeTypeMap);
         $this->fileName = $fileName ?? (string) microtime(true);
-        $this->fileMatrix = (new Matrix($this->matrixConfig, $mimeType, $this->uniqueIdentifire))($this->extension, $this->fileCategory, $this->fileName);
+        $this->fileMatrix = (new Matrix($this->matrixConfig, $this->mimeType, $this->uniqueIdentifire))($this->extension, $this->fileCategory, $this->fileName);
         return $this;
     }
 
@@ -54,14 +56,13 @@ class FileProcessor
 
     public function getFileName(): string
     {
-        return $this->fileName;
+        return pathinfo($this->targetFilename, PATHINFO_BASENAME);
     }
 
-    public function getExtension(): string
+    public function getMimeTypeMap(): string
     {
-        return $this->extension;
+        return json_encode([$this->extension => $this->mimeType]);
     }
-
 
     public function process($callback = null): FileProcessor
     {
@@ -80,6 +81,7 @@ class FileProcessor
     {
         if ($this->fileType == FileTypeEnum::IMAGE()) {
             if ($location && $data) {
+                $this->targetFilename = $location;
                 $this->adapter->save($location, $data);
             } else {
                 throw new \Exception('Provided parameters are empty.');
@@ -96,6 +98,16 @@ class FileProcessor
         return $this;
     }
 
+    public function getExtension(): string
+    {
+        return $this->extension;
+    }
+
+    public function getMimeType(): string
+    {
+        return $this->mimeType;
+    }
+
     public function delete(string $location): void
     {
         $this->adapter->delete($location);
@@ -106,8 +118,11 @@ class FileProcessor
         $this->adapter->deleteDirectory($location);
     }
 
-    public function read(string $location): string
+    public function read(): string
     {
-        return $this->adapter->read($location);
+        if (empty($this->sourcePath)) {
+            throw new \Exception("Required parameter: sourcePath is missing.");
+        }
+        return $this->adapter->read($this->sourcePath);
     }
 }

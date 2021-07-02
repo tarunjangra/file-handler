@@ -20,12 +20,13 @@ class LocalHandlerTest extends \Codeception\Test\Unit
 
     public function testImageSave()
     {
-        $this->processor->configure(SOURCE_PATH . '/test.jpg', '798789wuewio', 'profile')->process(function (Image $sourceImage, FileProcessor &$processor) {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', ['jpg' => 'image/jpeg'], '798789wuewio', 'profile')->process(function (Image $sourceImage, FileProcessor &$processor) {
             foreach ($processor->getMatrix() as $fileInfo) {
                 $processor->save($fileInfo['filePath'], (string) $sourceImage->resize($fileInfo['size']['width'], $fileInfo['size']['height'], function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })->encode());
+                $this->assertTrue($processor->getFileName() === "{$fileInfo['size']['width']}x{$fileInfo['size']['height']}." . $processor->getExtension());
             }
         });
         $this->assertTrue(file_exists(DESTINATION_PATH . '/798789wuewio/profile/16x16.jpg'));
@@ -35,8 +36,10 @@ class LocalHandlerTest extends \Codeception\Test\Unit
     }
     public function testImageRead()
     {
-        $fileData = $this->processor->read('798789wuewio/profile/16x16.jpg');
+        $fileData = $this->processor->configure('798789wuewio/profile/16x16.jpg', ['jpg' => 'image/jpeg'])->read();
         $this->assertTrue($fileData === file_get_contents(DESTINATION_PATH . '/798789wuewio/profile/16x16.jpg'));
+        $this->assertTrue($this->processor->getMimeType() === 'image/jpeg');
+        $this->assertTrue($this->processor->getExtension() === 'jpg');
     }
 
     public function testImageDelete()
@@ -59,26 +62,26 @@ class LocalHandlerTest extends \Codeception\Test\Unit
 
     public function testSavePDF()
     {
-        $this->processor->configure(SOURCE_PATH . '/sample.pdf', '798789wuewio')->save();
+        $this->processor->configure(SOURCE_PATH . '/sample.pdf', ['pdf' => 'application/pdf'], '798789wuewio')->save();
     }
 
     public function testMoreImageProcessings()
     {
-        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', ['jpg' => 'image/jpeg'])->process(function (Image $sourceImage, FileProcessor &$processor) {
             $processor->save('798789wuewio/profile/test-flip.jpg', $sourceImage->flip()->encode());
         });
 
-        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', ['jpg' => 'image/jpeg'])->process(function (Image $sourceImage, FileProcessor &$processor) {
             $processor->save('798789wuewio/profile/test-flip-verticale.jpg', $sourceImage->flip('v')->encode());
         });
 
-        $this->processor->configure(SOURCE_PATH . '/test.jpg')->process(function (Image $sourceImage, FileProcessor &$processor) {
+        $this->processor->configure(SOURCE_PATH . '/test.jpg', ['jpg' => 'image/jpeg'])->process(function (Image $sourceImage, FileProcessor &$processor) {
             $processor->save('798789wuewio/profile/test-rotate.jpg', $sourceImage->rotate(-85)->encode());
         });
     }
 
     public function testSaveCSV()
     {
-        $this->processor->configure(SOURCE_PATH . '/sample.csv', '798789wuewio', 'profile', null, 'text/csv')->targetFilename('new.csv')->save();
+        $this->processor->configure(SOURCE_PATH . '/sample.csv', ['csv' => 'text/csv'], '798789wuewio', 'profile')->targetFilename('new.csv')->save();
     }
 }
